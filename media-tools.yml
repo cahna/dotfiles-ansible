@@ -1,0 +1,16 @@
+---
+- name: install media-related tools such as file viewers and format support libs
+  hosts: localhost
+  tasks:
+    - assert:
+        that:
+          - ansible_pkg_mgr == 'pacman'
+
+    - name: install PDF viewer
+      pacman: "name={{ item }} state=installed"
+      sudo: yes
+      with_items:
+        - zathura
+        - "zathura-pdf-mupdf"
+        - "zathura-ps"
+

@@ -30,6 +30,14 @@
     - bzip2
     - libzip
 
+- name: install tools and other productivity-focused software
+  pacman: name={{ item }} state=installed
+  sudo: yes
+  with_items:
+    - zathura
+    - zathura-pdf-mupdf
+    - zathura-ps
+
 - name: enable ccache for makepkg (speed up build times for repeated builds)
   sudo: yes
   replace:
