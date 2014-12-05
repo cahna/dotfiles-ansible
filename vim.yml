@@ -1,0 +1,21 @@
+---
+- name: install official vim packages
+  hosts: localhost
+  tasks:
+    - name: install official vim packages
+      sudo: yes
+      sudo_user: '{{ ansible_ssh_user }}'
+      pacman: >
+        name={{ item }}
+        state=installed
+        update_cache=yes
+      with_items:
+        - gvim
+
+    # Install aur packages with yaourt
+    - 
+      with_items: 
+        - vim-pathogen-git
+        - vim-moonscript-git
+        - moonscript
+

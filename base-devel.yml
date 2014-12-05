@@ -1,0 +1,78 @@
+---
+- assert:
+    that:
+      - ansible_pkg_mgr == 'pacman'
+      - ansible_distribution == 'Archlinux'
+
+- pacman: update_cache=yes
+  sudo: yes
+
+- name: install essential packages
+  pacman: name={{ item }} state=installed
+  sudo: yes
+  with_items:
+    - base-devel
+    - ccache
+    - sudo
+    - openssh
+    - python2
+    - python2-pip
+    - vim
+    - git
+    - wget
+    - htop
+    - luajit
+    - luarocks-5.1
+    - unzip
+    - zip
+    - gzip
+    - zlib
+    - bzip2
+    - libzip
+
+- name: enable ccache for makepkg (speed up build times for repeated builds)
+  sudo: yes
+  replace:
+    dest:      /etc/makepkg.conf
+    regexp:    '^\#?BUILDENV=\(([a-z\!\s]+)\s\!?ccache\b'
+    replace:   'BUILDENV=(\1 ccache'
+    validate:  grep -P '^BUILDENV=\([a-z\ \!]+\ ccache' %s
+    owner:     root
+    group:     root
+    mode:      '0644'
+    backup:    yes
+
+- name: setup symlinks so python2 is default version on PATH
+  file: >
+    src={{ item.file_path }}
+    dest={{ item.link_path }}
+    owner=root
+    group=root
+    state=link
+  with_items:
+    - { file_path: '/usr/bin/python2', link_path: '/usr/bin/python' }
+    - { file_path: '/usr/bin/pip2', link_path: '/usr/bin/pip' }
+
+- name: install optional Ansible dependencies, just because
+  pacman: name={{ item }} state=installed
+  sudo: yes
+  with_items:
+    - python2-httplib2
+
+- name: install luajit-luarocks
+  include: aur/pkg.yml pkg_name=luajit-luarocks
+
+- name: install package-query (a yaourt dependency)
+  include: aur/pkg.yml pkg_name=package-query
+
+- name: install yaourt
+  include: aur/pkg.yml pkg_name=yaourt
+
+- name: install luarocks commonly used
+  sudo: yes
+  command: "luarocks-5.1 install {{ item }}"
+  with_items:
+    - moonscript
+    - penlight
+    - busted
+
